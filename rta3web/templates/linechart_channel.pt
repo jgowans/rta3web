@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+	<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+		<head>
+			<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+			<title>${heading}</title>
+			<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+			<script type="text/javascript"
+              src="${request.static_url('rta3web:static/deform/deform/static/scripts/jquery-2.0.3.min.js')}"></script>
+    		<script src="http//code.jquery.com/ui/2.0.3/jquery-ui.js"></script>
+			<tal:block tal:repeat="reqt reqts['css']">
+		        <link rel="stylesheet" type="text/css"
+		              href="${request.static_url(reqt)}"/>
+		    </tal:block>
+		    
+		    <tal:block tal:repeat="reqt reqts['js']">
+		        <script src="${request.static_url(reqt)}"
+		                type="text/javascript"></script>
+		    </tal:block>
+
+		    <script type="text/javascript" src="${request.static_url('rta3web:static/sketches/processing-1.4.1.js')}"></script>
+
+		    <canvas id="boss" data-processing-sources="${request.static_url('rta3web:static/sketches/bosschart.pde')}"></canvas>
+
+			<script type="text/javascript">
+				
+				function drawSomeText(id) {
+					var pjs = Processing.getInstanceById("boss");
+
+        			div = document.getElementById("graphdiv");
+					var data = eval(${data});
+					var times = eval(${times})
+					var overranges = eval(${overranges});
+					
+					pjs.setTimes(true);
+					pjs.setOverrange(overranges);
+					pjs.setVals(times, data, ${maxx}, ${minx}, ${maxy}, ${miny}); 
+					pjs.setLabels('${heading}', '${xaxis}', '${yaxis}');
+				}
+			</script>
+
+    		<link type="text/css" href="${request.static_url('rta3web:static/css/ska_style.css')}" rel="stylesheet"/>
+
+		</head>
+		<body>
+			<table width="1400" cellspacing="10" cellpadding="0" border="0" bgcolor="#ffffff">
+			    <tr>
+			        <td align="left">
+			            <h2>${heading}</h2>
+			        </td>
+			    </tr>
+			    <tr>
+			        <td align="left">
+			        	<div id="graphdiv"></div>
+						<button onclick="drawSomeText('mysketchcanvasid')">Click me to load</button>
+			        </td>
+			    </tr>
+			    <tr>
+			        <td align="left">
+			            Choose range of times to display or download a csv file of channel power values
+			        </td>
+			    </tr>
+			    <tr>
+			    	<td align="left">
+				        <p>${structure: form}</p>
+			    	</td>
+			    </tr>
+			</table>
+
+			<script type="text/javascript">
+		        $(document).ready(deform.load())
+		    </script>
+		</body>
+	</html>

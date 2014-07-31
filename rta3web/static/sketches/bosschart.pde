@@ -1,0 +1,673 @@
+/* @pjs preload="http://kat-sdp-vc3:6543/static/sketches/Images/close.png", "http://kat-sdp-vc3:6543/static/sketches/Images/help.png", "http://kat-sdp-vc3:6543/static/sketches/Images/refresh.png", "http://kat-sdp-vc3:6543/static/sketches/Images/save.png", "http://kat-sdp-vc3:6543/static/sketches/Images/expand.png", "http://kat-sdp-vc3:6543/static/sketches/Images/show_label.png", "http://kat-sdp-vc3:6543/static/sketches/Images/forbidden.png", "http://kat-sdp-vc3:6543/static/sketches/Images/Instructions.png","http://kat-sdp-vc3:6543/static/sketches/Images/overrange.png";*/
+
+//DATA
+float[] y_vals;
+float[] x_vals;
+int line_length = 0;
+float MAXX = 0;
+float MINX = 0;
+float MAXY = 0;
+float MINY = 0;
+float XDIFF = 0;
+int YDIFF = 0;
+float minX = 0;
+float maxX = 0;
+float minY = 0;
+float maxY = 0;
+float xDiff = 0.0;
+float yDiff = 0.0;
+float xMid = 0.0;
+float yMid = 0.0;
+int[] overrange;
+
+int normlength = 0;
+int[] x_norm;
+int[] y_norm;
+
+//VISUALS
+Pfont f;
+color[] colors;
+String heading, x_heading, y_heading;
+int left, right, top, bottom, x_width, y_height; //Graph edges
+PImage close;
+PImage download;
+PImage help;
+PImage refresh;
+
+//CONTROL
+boolean loaded = false;
+boolean renorm = false;
+boolean xZoom = true;
+boolean yZoom = true; 
+boolean zooming = false;
+boolean ctm = false;  //draw closest to mouse
+boolean showHelp = false;
+boolean times = false; // set x axis to times
+boolean dispOverrange = false;
+boolean hasOverrange = false;
+
+//INTERACTION
+float clickX;
+float clickY;
+int xPan;
+int yPan;
+int XPAN;
+int YPAN;
+float x_fact;
+float y_fact;
+float xScaleCorrection;
+float yScaleCorrection;
+float yScale = 1.0;
+float xScale = 1.0;
+float XSCALE = 1.0;
+float YSCALE = 1.0;
+float PXSCALE = 1.0;
+float PYSCALE = 1.0;
+int xCentre = left + x_width/2;
+int yCentre = top + y_height/2;
+float zooMin = 0.0;
+int zoomStart = 0.0;
+int mouseP = 0;
+
+void setup(){
+    frameRate(10);
+    size(1400,500, JAVA2D);
+    smooth();
+    f = createFont ("Arial", 24, true);
+    left = width * 0.1;
+    right = width * 0.9;
+    top = height * 0.1;
+    bottom = height * 0.9;
+    x_width = width * 0.8;
+    y_height = height * 0.8;
+    xCentre = left + x_width/2;
+    yCentre = top + y_height/2;
+    close = loadImage("http://kat-sdp-vc3:6543/static/sketches/Images/close.png");
+    refresh = loadImage("http://kat-sdp-vc3:6543/static/sketches/Images/refresh.png");
+    download = loadImage("http://kat-sdp-vc3:6543/static/sketches/Images/save.png");
+    help = loadImage("http://kat-sdp-vc3:6543/static/sketches/Images/help.png");
+    expand = loadImage("http://kat-sdp-vc3:6543/static/sketches/Images/expand.png");
+    show_label = loadImage("http://kat-sdp-vc3:6543/static/sketches/Images/show_label.png");
+    forbidden = loadImage("http://kat-sdp-vc3:6543/static/sketches/Images/forbidden.png");
+    instructions = loadImage("http://kat-sdp-vc3:6543/static/sketches/Images/Instructions.png");
+    overrangeIcon = loadImage("http://kat-sdp-vc3:6543/static/sketches/Images/overrange.png");
+}
+
+void setLabels (String h, String x, String y){
+  heading = h;
+  x_heading = x;
+  y_heading = y;
+}
+
+void setTimes(boolean set){
+  times = set;
+}
+
+void setOverrange(int[] over){
+  overrange=over;
+  hasOverrange = true;
+}
+
+void setVals(float[] x_data, float[] y_data, float maxx, float minx, float maxy, float miny)
+{
+  x_vals = x_data;
+  y_vals = y_data;
+  line_length = x_vals.length;
+  MAXX = maxx;
+  MAXY = maxy;
+  MINX = minx;
+  MINY = miny;
+  XDIFF = MAXX - MINX;
+  YDIFF = MAXY - MINY;
+  xMid = (MINX + MAXX)/2;
+  yMid = (MINY + MAXY)/2;
+  maxX = MAXX;
+  minX = MINX;
+  maxY = MAXY;
+  minY = MINY;
+  xDiff = MAXX - MINX;
+  yDiff = MAXY - MINY;
+  maxXPos = line_length - 1;
+  minXPos = 0;
+  length = maxXPos - minXPos + 1;
+  renorm = true;
+  loaded = true;
+}
+
+void draw() {
+
+  background(255);
+   
+  if(loaded)
+  {
+    calcBounds();
+    if (renorm && !zooming)
+    {
+      normalise();
+      renorm = false;
+    }
+
+    scale(xScale,yScale);
+    translate(xScaleCorrection, yScaleCorrection);
+    drawLine();
+    translate (-xScaleCorrection,-yScaleCorrection);
+    scale(1/xScale, 1/yScale);
+
+    if (ctm)
+      drawClosestToMouse();
+
+    drawBoundary();
+
+    if (zooming)
+      drawZoomBox();
+    
+    drawAxes (heading, x_heading, y_heading, 10, 10);
+
+    drawImages();
+
+    if (!zooming && !ctm)
+      noLoop();
+  }
+}
+
+void drawImages ()
+{
+  if(!showHelp)
+    image(help, right + 50 ,top/2,50,50);
+  else{
+    image(close,right + 50 ,top/2,50,50);
+    image(instructions, right - 800, 0, 800, 500);
+  }
+
+  image(refresh, right + 50, top/2 + 70, 50, 50);
+
+  image(download, right + 50, top/2 + 140, 50, 50);
+
+  image(show_label, right + 60, top/2 + 220, 30, 30);
+
+  if (hasOverrange)
+    image(overrangeIcon, right + 53, top/2 + 273, 44, 44);
+
+  if (ctm)
+    image (forbidden, right + 45, top/2 + 205, 60, 60);
+
+  if (dispOverrange && hasOverrange)
+    image(forbidden, right + 45, top/2 + 265, 60, 60);
+  
+}
+
+void drawLine ()
+{  
+  int start = minXPos;
+  if (start < 1)
+    start = 1;
+  stroke(#FF0000);
+  strokeWeight(0.5);
+
+  minXPos =  x_to_xPos(minX);
+  if (minXPos == 0)
+    minXPos = 1;
+
+  if (hasOverrange && dispOverrange)
+  {
+    for ( int i = minXPos; i <= x_to_xPos(maxX); i++)
+    {
+      line(XPAN + x_norm[i - 1], YPAN + y_norm[i - 1], XPAN + x_norm[i], YPAN + y_norm[i]);
+    }
+    stroke(#000000);
+    strokeWeight(2);
+    for (int i = 0; i < overrange.length; i++)
+    {
+      p = overrange[i];
+      if ( p == 0 && minXPos == 1)
+        line(XPAN + x_norm[p], YPAN + y_norm[p], XPAN + x_norm[p+1], YPAN + y_norm[p+1]);
+      else if ( p == x_norm.length && p < x_to_xPos(maxX))
+        line(XPAN + x_norm[p], YPAN + y_norm[p], XPAN + x_norm[p-1], YPAN + y_norm[p-1]);
+      else if(p > minXPos && p <= x_to_xPos(maxX) && p > 0)
+      {
+        line(XPAN + x_norm[p - 1], YPAN + y_norm[p - 1], XPAN + x_norm[p], YPAN + y_norm[p]);
+        line(XPAN + x_norm[p], YPAN + y_norm[p], XPAN + x_norm[p + 1], YPAN + y_norm[p + 1]);
+      }
+    }
+  }
+  else
+  {
+    for ( int i = minXPos; i <= x_to_xPos(maxX); i++)
+    {
+      line(XPAN + x_norm[i - 1], YPAN + y_norm[i - 1], XPAN + x_norm[i], YPAN + y_norm[i]);
+    }
+  }
+  
+}
+
+/* New Zoom*/
+void normalise()
+{
+  x_norm = new int[x_vals.length];
+  y_norm = new int[y_vals.length];
+  x_fact = XSCALE*x_width/XDIFF;
+  y_fact = YSCALE*y_height/YDIFF;
+  for (int i = 0; i < x_vals.length; i++){
+    x_norm[i] = (x_vals[i]-minX) * x_fact + left;
+    y_norm[i] = bottom - (y_vals[i]-minY) * y_fact;
+  }
+}
+
+void calcBounds()
+{ 
+  xDiff = XDIFF / XSCALE;
+  yDiff = YDIFF / YSCALE;
+  minX = xMid - (xDiff/2);
+  maxX = xMid + (xDiff/2);
+  minY = yMid - (yDiff/2);
+  maxY = yMid + (yDiff/2);
+  if (renorm)
+  {
+    PXSCALE = XSCALE;
+    PYSCALE = YSCALE;
+    XPAN = 0;
+    YPAN = 0;
+  }
+}
+
+float PREVMID = 0.0;
+
+void mouseScrolled()
+{
+  float oXSCALE = XSCALE;
+  float oYSCALE = YSCALE;
+  if (mouseScroll > 0)
+  {
+    if (xZoom){
+      XSCALE = XSCALE + XSCALE/4;
+    }
+    if (yZoom){
+      YSCALE = YSCALE + YSCALE/4;;
+    }
+  }
+  else
+  {
+    if (xZoom){
+      XSCALE = XSCALE - XSCALE/4;
+    }
+    if (yZoom){
+      YSCALE = YSCALE - YSCALE/4;
+    }
+  }
+
+  float nMinX = mousePos_to_x_val() - (mousePos_to_x_val() - minX)*(PXSCALE/XSCALE);
+  float nMinY = mousePos_to_y_val() - (mousePos_to_y_val() - minY)*(PYSCALE/YSCALE);
+
+  xMid = nMinX + XDIFF/XSCALE/2;
+  yMid = nMinY + YDIFF/YSCALE/2;
+
+  PREVMID = yMid;
+  renorm = true;
+  loop();
+}
+
+void keyPressed()
+{
+  if (key == 'r'){
+    resetZoom();
+  }
+  else if (key == 't'){
+    if (ctm)
+      ctm = false;
+    else
+      ctm = true;
+  }
+  else if (key == 's'){
+    save('spectrum.png');
+    
+  }
+}
+
+// void mouseReleased()
+// {
+//   if (zooming)
+//     if (keyPressed == false)
+//       zooming = false;
+//     else if (key != 'z')
+//       zooming = false;
+// }
+
+void mouseClicked ()
+{
+  if (inBounds(right+50, right + 100, top/2, top/2 + 50)){
+    if (showHelp)
+      showHelp = false;
+    else
+      showHelp = true;
+    loop();
+  }
+  if (inBounds(right + 50, right + 100, top/2 + 70, top/2 + 120))
+    resetZoom();
+  if (inBounds(right + 50, right + 100, top/2 + 140, top/2 + 190))
+  {
+    save('spectrum.png');
+    println("in save");
+  }
+  if (inBounds(right + 50, right + 100, top/2 + 210, top/2 + 260))
+  {
+    if(ctm)
+      ctm = false;
+    else
+      ctm = true;
+    loop();
+  }
+
+  if (inBounds(right + 50, right + 100, top/2 + 270, top/2 + 320))
+  {
+    if(dispOverrange)
+      dispOverrange = false;
+    else
+      dispOverrange = true;
+    loop();
+  }
+}
+
+boolean inBounds (int x1, int x2, int y1, int y2){
+  if (x1 <= mouseX && x2 >= mouseX && y1 <= mouseY && y2 >= mouseY)
+    return true;
+  else
+    return false;
+}
+
+void find_y_range(){
+  minY = MAXY;
+  maxY = MINY;
+  for (i = x_to_xPos(minX); i < x_to_xPos(maxX); i++)
+  {
+    if(y_vals[i] < minY)
+      minY = y_vals[i];
+    if (y_vals[i] > maxY)
+      maxY = y_vals[i];
+  }
+}
+
+void resetZoom(){
+  minX = MINX;
+  maxX = MAXX;
+  minY = MINY;
+  maxY = MAXY;
+  xMid = (minX+maxX)/2;
+  yMid = (minY+maxY)/2;
+  XSCALE = 1;
+  YSCALE = 1;
+  XPAN = 0;
+  YPAN = 0;
+  renorm = true;
+  loop();
+}
+
+void drawZoomBox()
+{
+  // fill(0,0,255,50);
+  // rect(zoomStart, top, mouseX - zoomStart, bottom - top);
+
+  stroke(0,0,255);
+  strokeWeight(2);
+
+  line(zoomStart, top, zoomStart, bottom);
+  line(mouseX, top, mouseX, bottom);
+}
+
+void mouseReleased(){
+  if (keyPressed == true && key == 'z'){
+    frameRate(5);
+    if (zooming == true){
+      frameRate(10);
+      zooming = false
+      maxX = mousePos_to_x_val();
+      if (maxX > zooMin)
+        minX = zooMin;
+      else{
+        minX = maxX
+        maxX = zooMin
+      }
+      find_y_range();
+      yDiff = (maxY - minY) * 1.2;
+      YSCALE = YDIFF/yDiff;
+      yMid = (minY + maxY)/2;
+      xDiff = (maxX - minX);
+      XSCALE = XDIFF/xDiff;
+      xMid = (maxX + minX)/2
+      renorm = true;
+      loop();
+    }
+  }
+  else if (zooming)
+    zooming = false;
+}
+
+void keyReleased ()
+{
+  if (key == 'z' && zooming)
+    zooming = false;
+}
+
+void mouseDragged()
+{
+  if (keyPressed == true && key == 'z'){
+    if (zooming == false){
+      zooming = true;
+      zoomStart = mouseX;
+      zooMin = mousePos_to_x_val();
+      loop();
+    }
+  }
+  else{
+    int distX = clickX - mouseX;
+    int distY = clickY - mouseY;
+    clickX = mouseX;
+    clickY = mouseY;
+    XPAN = XPAN - distX;
+    YPAN = YPAN - distY;
+    xMid = xMid + distX/x_width*xDiff;
+    yMid = yMid - distY/y_height*yDiff;
+    loop();
+  }
+}
+
+float mousePos_to_x_val()
+{
+  return (mouseX - left) / x_width * xDiff + minX;
+}
+
+float mousePos_to_y_val()
+{
+  return (bottom - mouseY) / y_height * yDiff + minY;
+}
+
+void mousePressed ()
+{
+  clickX = mouseX;
+  clickY = mouseY;
+}
+
+int x_to_xPos(float x)
+{
+  if (x < MINX)
+    return 0;
+  else if (x > MAXX)
+    return x_vals.length - 1;
+  else{
+    return int((x - MINX)/XDIFF * (x_vals.length - 1));
+  }
+}
+
+int binSearch (float[] arr, float c)
+{
+  int max = arr.length - 1;
+  int min = 0;
+  int imid = 0;
+  // continue searching while [imin,imax] is not empty
+  while (min <= max)
+  {
+    /* calculate the midpoint for roughly equal partition */
+    imid = int((min + max) / 2);
+
+    // determine which subarray to search
+    if (arr[imid] < c)
+    {
+      min = imid + 1;
+    }
+    else if (arr[imid] > c)
+    {
+      max = imid - 1;
+    }
+    else
+      return imid;
+  }
+  return imid;
+}
+
+void resetVals(float[] y_data, miny, maxy){
+  y_vals = y_data;
+  MAXY = maxy;
+  MINY = miny;
+  YDIFF = MAXY - MINY;
+  renorm = true;
+  loop();
+}
+
+//Draw bounding box around graph so that lines whihc go out of the plot are covered
+void drawBoundary()
+{
+  stroke(#FFFFFF);
+  fill(#FFFFFF);
+  rect(0,0,left,height)
+  rect(0,0,width,top);
+  rect(right,0,width-right, height);
+  rect(0,bottom, width, height-bottom);
+}
+
+void drawClosestToMouse(){
+  stroke(#FF0000);
+  fill(#000000);
+  mouseP = x_to_xPos(mousePos_to_x_val());
+  findClosestToMouse(int(x_vals.length/XSCALE * 0.01));
+  if (times)
+    text("(" + timestampToTime(x_vals[mouseP], 2)  + ", " + formatFloat(y_vals[mouseP], 2) + ")", XPAN + x_norm[mouseP] + 11, YPAN + y_norm[mouseP] - 9);
+  else
+    text("(" + formatFloat(x_vals[mouseP], 2)  + ", " + formatFloat(y_vals[mouseP], 2) + ")", XPAN + x_norm[mouseP] + 11, YPAN + y_norm[mouseP] - 9);
+  //arc (XPAN + x_norm[mouseP], YPAN + y_norm[mouseP], 10, 10, 0, TWO_PI);
+  image(show_label, XPAN + x_norm[mouseP] - 10, YPAN + y_norm[mouseP] - 18, 20, 20);
+}
+
+void findClosestToMouse(int range)
+{
+  float minDist = 50000.0;
+  float dist;
+  int mP = mouseP;
+  for (int i = mP - range; i < mP + range; i++)
+  {
+    dist = abs(mouseX - x_norm[i]) + abs(mouseY - y_norm[i]);
+    if (dist < minDist)
+    {
+      mouseP = i;
+      minDist = dist;
+    }
+  }
+}
+
+//Draws the axes for the line graph, the min and max values are the extrem values on each axes. nX and
+//nY determine the amount "number labels" on the axes. So if minX = 0, maxX = 10 and nX = 5, the x
+//axis will have the points 0,2,4,6,8,10 labeled. 
+void drawAxes(String heading, String xName, String yName, int nX, int nY)
+{
+  float xStep = 0.8 * width/nX, yStep = 0.8 * height/nY;
+  float xGap = (maxX - minX)/float(nX), yGap = (maxY - minY)/float(nY);
+
+  // println(xName);
+
+  fill(#000000);
+  strokeWeight(2);
+  stroke(#DCDCDC);
+  float pos = 0.1 * height;
+  float val = maxY;
+  String temp;
+  for (int i = 0; i < nY; i++)
+  {
+    text(formatFloat(val, 2), width * 0.05, pos + 3);
+    strokeWeight(0.5);
+    line (width * 0.1, pos, width * 0.9, pos);
+    strokeWeight(2);
+    pos = pos + yStep;
+    val = val - yGap;
+  }
+  text(formatFloat(val, 2), width * 0.05, pos + 3);
+
+  stroke(0);
+  line (left, top, left, bottom);
+  line (left, bottom, right, bottom);
+  pos = left;
+  val = minX;
+  if (times)
+    temp = timestampToTime(val);
+  else
+    temp = formatFloat(val, 2);
+  text (temp, pos - (temp.length() * 3), height * 0.95);
+  pos = pos + xStep;
+  val = val + xGap;
+  tick = height * 0.895;
+  for (int i = 0; i < nX; i++)
+  {
+    line (pos, bottom, pos, tick);
+    if (times)
+      temp = timestampToTime(val);
+    else
+      temp = formatFloat(val, 2);
+    text (temp, pos - (temp.length() * 3), height * 0.95);
+    pos = pos + xStep;
+    val = val + xGap;
+  }
+
+  fill(0);
+  text(heading, width * 0.5 - (heading.length() * 4), height * 0.05);
+  text (x_heading, width * 0.5, height - 3);
+  translate(width*0.02, height * 0.5);
+  rotate (-HALF_PI);
+  text (y_heading, 0, 0);
+  rotate (HALF_PI);
+  translate (-width*0.02, -height * 0.5);
+}
+
+String timestampToTime (int timestamp)
+{
+  int seconds = int(timestamp % 60);
+  int minutes = int((timestamp / 60) % 60);
+  int hours = int((timestamp / 3600 + 2) % 24);
+  ret = formatInt(hours,2) + ":" +  formatInt(minutes,2) + ":" + formatInt(seconds,2);
+  return ret;
+}
+
+String formatInt(int i, int r)
+{
+  String num = String(i);
+  while (num.length() < r)
+  {
+    num = "0" + num;
+  }
+  return num;
+}
+
+
+String formatFloat (float f, int r)
+{
+  String oh = ".";
+  for (int i = 0; i < r; i++)
+    oh = oh + "0";
+
+  String original = str(f);
+  String ret;
+  if (f >= 0)
+    ret = str(floor(f));
+  else
+    ret = str(floor(f + 1.0));
+  if ( !original.substring(ret.length, ret.length + r + 1).equals(oh))
+    ret = ret + original.substring(ret.length(), ret.length() + r + 1);
+
+  return ret;
+}
