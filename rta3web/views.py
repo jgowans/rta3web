@@ -134,12 +134,9 @@ class BossNamespace(BaseNamespace, TestMixin):
         def sendcpu():
             self.db = current_spectra.current_spectra(mode = 'r')
             while True:
-                spectrum, timestamp = self.db.getCurrentSpectrum()
-                # start = time.time()
-                spectrum = spectrum[cnf.modes[1]['low_chan']:cnf.modes[1]['high_chan']]
+                spectrum, timestamp, mode = self.db.getCurrentSpectrum()
                 spectime = time.localtime(timestamp)
-                # spectrum = np.random.rand(100) * 50 + 500
-                # spectrum = np.arange(101)
+                spectrum = spectrum[cnf.modes[mode]['low_chan']:cnf.modes[mode]['high_chan'] + 1]
                 timeS = '%02i:%02i:%02i on %02i/%02i/%04i'%(spectime[3], spectime[4], spectime[5], spectime[2], spectime[1], spectime[0])
                 
                 # freqs = cnf.getFreqs(1)/ 10e6
@@ -153,7 +150,7 @@ class BossNamespace(BaseNamespace, TestMixin):
                                 'heading':"Spectrum taken at %s"%timeS,\
                                 'xaxis':"Frequency (Mhz)",\
                                 'yaxis':"Power (dBuV/m)"})
-                print ("sent data for %s"%timeS)
+                # print ("sent data for %s"%timeS)
                 gevent.sleep(0.01)
         print"spawn updater"
         self.updater = gevent.Greenlet(sendcpu)
@@ -257,11 +254,16 @@ def graph_update_view(request):
 @view_config(route_name='boss_update', renderer='templates/bosschart_update.pt')
 def graph_update_view(request):
     db = current_spectra.current_spectra(mode = 'r')
-    spectrum, timestamp = db.getCurrentSpectrum()
+    spectrum, timestamp, mode = db.getCurrentSpectrum()
     spectime = time.localtime(timestamp)
-    spectrum = spectrum[cnf.modes[1]['low_chan']:cnf.modes[1]['high_chan']]
+    spectrum = spectrum[cnf.modes[mode]['low_chan']:cnf.modes[mode]['high_chan'] + 1]
     timeS = '%02i:%02i:%02i on %02i/%02i/%04i'%(spectime[3], spectime[4], spectime[5], spectime[2], spectime[1], spectime[0])
-    freqs = cnf.getFreqs(1)[cnf.modes[1]['low_chan']:cnf.modes[1]['high_chan']] / 10e5
+    print mode
+    print cnf.modes[mode]['low_chan']
+    print cnf.getFreqs(mode)[cnf.modes[mode]['low_chan']]
+    print cnf.modes[mode]['high_chan'] + 1
+    print cnf.getFreqs(mode)[cnf.modes[mode]['high_chan'] + 1]
+    freqs = cnf.getFreqs(mode)[cnf.modes[mode]['low_chan']:cnf.modes[mode]['high_chan'] + 1] / 10e5
     db.close()
 
     miny = np.asscalar(spectrum.min())
@@ -324,17 +326,17 @@ def graph_channel_view(request):
                     print "Not valid input"
 
 
-            channel = cnf.freq_to_chan(cnf.modes[0]['base_freq'],frequency,cnf.modes[0]['n_chan'], cnf.modes[0]['bandwidth'])
+            channel = cnf.freq_to_chan_mode(frequency)
             # db.frequency_to_channel(frequency)
 
-            print "frequency = %f channel = %i"%(frequency, channel)
+            # print "frequency = %f channel = %i"%(frequency, channel)
 
             sTimestamp = int(time.mktime(sTime))
             eTimestamp = int(time.mktime(eTime))
 
             timeS = '%02i:%02i:%02i on %02i/%02i/%04i to %02i:%02i:%02i on %02i/%02i/%04i'%(sTime[3], sTime[4], sTime[5], sTime[2], sTime[1], sTime[0], eTime[3], eTime[4], eTime[5], eTime[2], eTime[1], eTime[0],)
 
-            spectrum = db.rfi_monitor_get_range(sTimestamp, eTimestamp, 0, channel = channel) #362
+            spectrum = db.rfi_monitor_get_range(sTimestamp, eTimestamp, channel) #362
 
             overranges = db.rfi_monitor_get_adc_overrange_pos(sTimestamp, eTimestamp)
 
@@ -345,11 +347,11 @@ def graph_channel_view(request):
             times = np.arange(int(sTimestamp),int(sTimestamp + spectrum.size),1)
 
         except deform.ValidationFailure as e:
-            return {'data':json.dumps([]),\
-                    'times':"whhops",\
-                    'heading':"",\
+            return {'overrange':json.dumps(adc_overrange),\
+                    'overrangeS':overrangeS,\
+                    'times':"whoops",\
                     'form':e.render(),\
-                    'reqts':reqts,\
+                    'reqts':reqts,
                     'xaxis':"",\
                     'yaxis':"",\
                     'minx':0,\
@@ -380,11 +382,11 @@ def graph_channel_view(request):
                     print "Not valid input"
 
 
-            channel = cnf.freq_to_chan(cnf.modes[0]['base_freq'],frequency,cnf.modes[0]['n_chan'], cnf.modes[0]['bandwidth'])
+            channel = cnf.freq_to_chan_mode(frequency)
 
             timeS = '%02i_%02i_%02i_on_%02i_%02i_%04i_to_%02i_%02i_%02i_on_%02i_%02i_%04i'%(sTime[3], sTime[4], sTime[5], sTime[2], sTime[1], sTime[0], eTime[3], eTime[4], eTime[5], eTime[2], eTime[1], eTime[0],)
 
-            spectrum = db.rfi_monitor_get_range(sTimestamp, eTimestamp, 0, channel = channel)
+            spectrum = db.rfi_monitor_get_range(sTimestamp, eTimestamp, channel)
 
 
 
@@ -422,7 +424,7 @@ def graph_channel_view(request):
         #eTimestamp = eTimestamp - eTimestamp % 3600
         sTime = time.localtime(sTimestamp)
         eTime = time.localtime(eTimestamp)
-        spectrum = db.rfi_monitor_get_range(sTimestamp, eTimestamp, 0, channel = 372)
+        spectrum = db.rfi_monitor_get_range(sTimestamp, eTimestamp, [[1, 23667.0], [2, 2731.0]])
         overranges = db.rfi_monitor_get_adc_overrange_pos(sTimestamp, eTimestamp)
         frequency = 70.4
         timeS = '%02i:%02i:%02i to %02i:%02i:%02i'%(sTime[3], sTime[4], sTime[5], eTime[3], eTime[4], eTime[5])
