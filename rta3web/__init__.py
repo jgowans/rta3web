@@ -1,9 +1,14 @@
 from pyramid.config import Configurator
+import mimetypes
 
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
+
+    mimetypes.init()
+    mimetypes.add_type("pde","text/processing")    
+
     config = Configurator(settings=settings)
     config.include('pyramid_chameleon')
     config.add_static_view('static', 'rta3web:static', cache_max_age=3600)

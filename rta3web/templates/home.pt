@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" xmlns:tal="http://xml.zope.org/namespaces/tal">
+<head>
+    <title>RATTY RFI Monitoring System</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+    <!-- <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script> -->
+    <link type="text/css" href="${request.static_url('rta3web:static/css/ska_style.css')}" rel="stylesheet"/>
+</head>
+<body>
+    
+	<table width="100%" cellspacing="0" cellpadding="2" border="0">
+        <tbody>
+            <tr>
+                <td> </td>
+            </tr>
+        </tbody>
+    </table>
+    <div align="center">
+        <table width="950" cellspacing="10" cellpadding="0" border="0" bgcolor="#ffffff">
+            <tr>
+                <td width="190" align="left">
+                    <a href="www.ska.ac.za">
+                        <img width="190" height="280" border="0" alt="Back to the homepage" src="${request.static_url('rta3web:static/images/ska_logo_new.jpg')}">
+                    </a>
+                </td>
+                <td align="left">
+                    <img width="760" height="280" border="0" alt="Picture of MeerKAT dish" src="${request.static_url('rta3web:static/images/2014_meerkatant_25.jpg')}">
+                </td>
+            </tr>
+            <tr>
+            </tr>
+            <tr>
+                <td width="190" width="190" valign="top" bgcolor="#204c71" align="left">
+                	<link type="text/css" href="${request.static_url('rta3web:static/css/link_style.css')}" rel="stylesheet"/>
+                	<script type="text/javascript">
+                		//SuckerTree Vertical Menu 1.1 (Nov 8th, 06)
+						//By Dynamic Drive: http://www.dynamicdrive.com/style/
+						var menuids=["suckertree1"] //Enter id(s) of SuckerTree UL menus, separated by commas
+						function buildsubmenus(){
+						for (var i=0; i<menuids.length; i++){
+						var ultags=document.getElementById(menuids[i]).getElementsByTagName("ul")
+						for (var t=0; t<ultags.length; t++){
+						ultags[t].parentNode.getElementsByTagName("a")[0].className="subfolderstyle"
+						if (ultags[t].parentNode.parentNode.id==menuids[i]) //if this is a first level submenu
+						ultags[t].style.left=ultags[t].parentNode.offsetWidth+"px" //dynamically position first level submenus to be width of main menu item
+						else //else if this is a sub level submenu (ul)
+						ultags[t].style.left=ultags[t-1].getElementsByTagName("a")[0].offsetWidth+"px" //position menu to the right of menu item that activated it
+						ultags[t].parentNode.onmouseover=function(){
+						this.getElementsByTagName("ul")[0].style.display="block"
+						}
+						ultags[t].parentNode.onmouseout=function(){
+						this.getElementsByTagName("ul")[0].style.display="none"
+						}
+						}
+						for (var t=ultags.length-1; t>-1; t--){ //loop through all sub menus again, and use "display:none" to hide menus (to prevent possible page scrollbars
+						ultags[t].style.visibility="visible"
+						ultags[t].style.display="none"
+						}
+						}
+						}
+						if (window.addEventListener)
+						window.addEventListener("load", buildsubmenus, false)
+						else if (window.attachEvent)
+						window.attachEvent("onload", buildsubmenus) 
+					</script>
+					<div class="suckerdiv">
+						<ul id="suckertree1">
+							<li>
+		                		<a href = "${request.route_url('boss_update')}">
+		                			Current Spectrum
+		                		</a>
+		                	</li>
+                            <li>
+		                		<a href = "${request.route_url('graph_channel')}">
+		                			Graph Channel
+		                		</a>
+		                	</li>
+						</ul>
+					</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>

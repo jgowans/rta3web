@@ -86,7 +86,7 @@ class GraphNamespace(BaseNamespace, TestMixin):
         def sendcpu():
             self.db = current_spectra.current_spectra()
             while True:
-                spectrum, timestamp = self.db.getCurrentSpectrum()
+                spectrum, timestamp, mode = self.db.getCurrentSpectrum()
                 # spectrum = cnf.Base64Decode(spectrum)
                 spectime = time.localtime(timestamp)
                 timeS = '%02i:%02i:%02i on %02i/%02i/%04i'%(spectime[3], spectime[4], spectime[5], spectime[2], spectime[1], spectime[0])
@@ -103,7 +103,7 @@ class GraphNamespace(BaseNamespace, TestMixin):
                                 'miny':miny,\
                                 'heading':"Spectrum taken at %s"%timeS,\
                                 'xaxis':"Frequency (Mhz)",\
-                                'yaxis':"Power (dBuV/m)"})
+                                'yaxis':"Power (dBm)"})
                 print ("sent data for %s"%timeS)
                 gevent.sleep(0.5)
         print"spawn updater"
@@ -132,6 +132,7 @@ class BossNamespace(BaseNamespace, TestMixin):
     def recv_connect(self):
         print ("recieved boss connection")
         def sendcpu():
+            lastmode = 0
             self.db = current_spectra.current_spectra(mode = 'r')
             while True:
                 spectrum, timestamp, mode = self.db.getCurrentSpectrum()
@@ -139,17 +140,30 @@ class BossNamespace(BaseNamespace, TestMixin):
                 spectrum = spectrum[cnf.modes[mode]['low_chan']:cnf.modes[mode]['high_chan'] + 1]
                 timeS = '%02i:%02i:%02i on %02i/%02i/%04i'%(spectime[3], spectime[4], spectime[5], spectime[2], spectime[1], spectime[0])
                 
-                # freqs = cnf.getFreqs(1)/ 10e6
                 miny = np.asscalar(spectrum.min())
                 maxy = np.asscalar(spectrum.max())
                 js = json.dumps(spectrum.tolist())
+                freqs = np.array([])
+                minx = 0
+                maxx = 0
+                if mode != lastmode:
+                    print "mode = %i != lastmode = %i"%(mode, lastmode)
+                    freqs = cnf.getFreqs(mode)[cnf.modes[mode]['low_chan']:cnf.modes[mode]['high_chan'] + 1] / 10e5
+                    minx = freqs.min()
+                    maxx = freqs.max()
+                    print "freqs.shape = %s"%str(freqs.shape)
+
+                lastmode = mode
 
                 self.emit('data',{'spectrum':js,\
+                                'freqs':json.dumps(freqs.tolist()),\
+                                'minx':minx,\
+                                'maxx':maxx,\
                                 'maxy':maxy,\
                                 'miny':miny,\
                                 'heading':"Spectrum taken at %s"%timeS,\
                                 'xaxis':"Frequency (Mhz)",\
-                                'yaxis':"Power (dBuV/m)"})
+                                'yaxis':"Power (dBm)"})
                 # print ("sent data for %s"%timeS)
                 gevent.sleep(0.01)
         print"spawn updater"
@@ -223,14 +237,14 @@ import time
 import numpy as np
 import json
 
-@view_config(route_name='home', renderer='templates/mytemplate.pt')
+@view_config(route_name='home', renderer='templates/home.pt')
 def my_view(request):
     return {'project': 'rta3web'}
 
 @view_config(route_name='graph_update', renderer='templates/linechart_update.pt')
 def graph_update_view(request):
     db = current_spectra.current_spectra()
-    spectrum, timestamp = db.getCurrentSpectrum()
+    spectrum, timestamp, mode = db.getCurrentSpectrum()
     spectime = time.localtime(timestamp)
     spectrum = cnf.Base64Decode(spectrum)
     timeS = '%02i:%02i:%02i on %02i/%02i/%04i'%(spectime[3], spectime[4], spectime[5], spectime[2], spectime[1], spectime[0])
@@ -249,10 +263,13 @@ def graph_update_view(request):
     'miny':miny,\
     'heading':"Spectrum taken at %s"%timeS,\
     'xaxis':"Frequency (Mhz)",\
-    'yaxis':"Power (dBuV/m)"}
+    'yaxis':"Power (dBm)"}
 
 @view_config(route_name='boss_update', renderer='templates/bosschart_update.pt')
 def graph_update_view(request):
+    import mimetypes
+    mimetypes.init()
+    mimetypes.add_type("pde","text/processing")
     db = current_spectra.current_spectra(mode = 'r')
     spectrum, timestamp, mode = db.getCurrentSpectrum()
     spectime = time.localtime(timestamp)
@@ -278,7 +295,7 @@ def graph_update_view(request):
     'miny':miny,\
     'heading':"Spectrum taken at %s"%timeS,\
     'xaxis':"Frequency (Mhz)",\
-    'yaxis':"Power (dBuV/m)"}
+    'yaxis':"Power (dBm)"}
 
 @view_config(route_name='graph_channel', renderer='templates/linechart_channel.pt')
 def graph_channel_view(request):
@@ -329,6 +346,15 @@ def graph_channel_view(request):
             channel = cnf.freq_to_chan_mode(frequency)
             # db.frequency_to_channel(frequency)
 
+            # freqs = cnf.getFreqs(channel[0][0] - 1)
+            # print "Incoming frequency = %f converted to mode_chan %s"%(frequency, str(channel))
+            # print "Incoming frequency = %f converted to mode_chan %s"%(frequency, str(channel[0][1]))
+            # print "outgoing frequency 1 is %f"%freqs[channel[0][1]]
+            # freqs = cnf.getFreqs(channel[1][0] - 1)
+            # print "outgoing frequency 2 is %f"%freqs[channel[1][1]]
+
+            # time.sleep(5)
+
             # print "frequency = %f channel = %i"%(frequency, channel)
 
             sTimestamp = int(time.mktime(sTime))
@@ -344,7 +370,9 @@ def graph_channel_view(request):
             maxy = spectrum.max()
 
 
-            times = np.arange(int(sTimestamp),int(sTimestamp + spectrum.size),1)
+            times = np.arange(int(sTimestamp) - 1,int(sTimestamp -1 + spectrum.size),1)
+
+            
 
         except deform.ValidationFailure as e:
             return {'overrange':json.dumps(adc_overrange),\
@@ -400,7 +428,7 @@ def graph_channel_view(request):
             if not os.path.exists("%s/srv/"%cnf.root_dir):
                 os.makedirs("%s/srv/"%cnf.root_dir)
 
-            dbControl.array_to_csv_file(data,("month","day","hour","minute","second","day of week", "power dbuV/m"),fileName)
+            dbControl.array_to_csv_file(data,("month","day","hour","minute","second","day of week", "power dbm"),fileName)
             fApp = FileApp(fileName)
 
             return fApp.make_response()
@@ -426,7 +454,8 @@ def graph_channel_view(request):
         eTime = time.localtime(eTimestamp)
         spectrum = db.rfi_monitor_get_range(sTimestamp, eTimestamp, [[1, 23667.0], [2, 2731.0]])
         overranges = db.rfi_monitor_get_adc_overrange_pos(sTimestamp, eTimestamp)
-        frequency = 70.4
+        freqs = cnf.getFreqs(0) / 10e5
+        frequency = freqs[23667.0]
         timeS = '%02i:%02i:%02i to %02i:%02i:%02i'%(sTime[3], sTime[4], sTime[5], eTime[3], eTime[4], eTime[5])
         miny = spectrum[:-2].min()
         maxy = spectrum[:-2].max()
@@ -440,13 +469,13 @@ def graph_channel_view(request):
     return {'data':json.dumps(spectrum.tolist()),\
     'times':json.dumps(times.tolist()),\
     'overranges':json.dumps(overranges),\
-    'maxx':int(sTimestamp + spectrum.size),\
-    'minx':int(sTimestamp),\
+    'maxx':int(sTimestamp - 1 + spectrum.size),\
+    'minx':int(sTimestamp - 1),\
     'maxy':maxy,\
     'miny':miny,\
     'heading':"%.2fMHz taken from %s"%(frequency,timeS),\
     'xaxis':"Time",\
-    'yaxis':"Power (dBuV/m)",\
+    'yaxis':"Power (dBm)",\
     'form':form.render(),\
     'reqts':reqts}
 

@@ -111,6 +111,7 @@ void setOverrange(int[] over){
 
 void setVals(float[] x_data, float[] y_data, float maxx, float minx, float maxy, float miny)
 {
+  loaded = false;
   x_vals = x_data;
   y_vals = y_data;
   line_length = x_vals.length;
@@ -142,11 +143,10 @@ void draw() {
    
   if(loaded)
   {
-    
+    calcBounds();
     if (renorm && !zooming)
     {
       normalise();
-      calcBounds();
       renorm = false;
     }
 
@@ -170,13 +170,13 @@ void draw() {
 
     if (!zooming && !ctm)
       noLoop();
+  }
 
-    if (resetview)
+  if (resetview)
     {
       resetZoom();
       resetview = false;
     }
-  }
 }
 
 void drawImages ()
@@ -312,7 +312,6 @@ void mouseScrolled()
 
   PREVMID = yMid;
   renorm = true;
-  calcBounds();
   loop();
 }
 
@@ -476,14 +475,13 @@ void mouseDragged()
     YPAN = YPAN - distY;
     xMid = xMid + distX/x_width*xDiff;
     yMid = yMid - distY/y_height*yDiff;
-    calcBounds();
     loop();
   }
 }
 
 float mousePos_to_x_val()
 {
-  return (mouseX - left) / x_width * xDiff + minX + 1;
+  return (mouseX - left) / x_width * xDiff + minX;
 }
 
 float mousePos_to_y_val()

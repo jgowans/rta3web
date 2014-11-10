@@ -1,0 +1,299 @@
+body   { background-color: #204c71; background-image: url(../images/bg.jpg); background-repeat:repeat-x; font-style: normal; 
+         font-variant: normal; font-weight: normal; font-family: arial, trebuchet ms, sans-serif;
+		 margin-top: 0; margin-left: 0; margin-height: 0; margin-width: 0; margin-right: 0; margin-bottom: 50;
+		}
+
+A:link {font-family: arial, trebuchet ms, sans-serif; color: #363636;  
+}
+A:visited {font-family: arial, trebuchet ms, sans-serif; color: #363636;  
+}
+A:active {font-family: arial, trebuchet ms, sans-serif; color: #094e8f;  
+}	 
+A:hover {font-family: arial, trebuchet ms, sans-serif; color: #094e8f; 
+}
+
+A.homelink:link {FONT-WEIGHT: bold; FONT-SIZE: 14px; COLOR: #ffffff; FONT-FAMILY: arial, trebuchet ms, sans-serif; TEXT-DECORATION: none;
+		}
+A.homelink:visited {FONT-WEIGHT: bold; FONT-SIZE: 14px; COLOR: #ffffff; FONT-FAMILY: arial, trebuchet ms, sans-serif; TEXT-DECORATION: none;
+		}
+A.homelink:active {FONT-WEIGHT: bold; FONT-SIZE: 14px; COLOR: #d1a469; FONT-FAMILY: arial, trebuchet ms, sans-serif; TEXT-DECORATION: none;
+		}
+A.homelink:hover {FONT-WEIGHT: bold; FONT-SIZE: 14px; COLOR: #d1a469; FONT-FAMILY: arial, trebuchet ms, sans-serif; TEXT-DECORATION: none;
+		}	
+		
+A.whitelink:link {FONT-WEIGHT: normal; FONT-SIZE: 14px; COLOR: #ffffff; FONT-FAMILY: arial, trebuchet ms, sans-serif; 
+		}
+A.whitelink:visited {FONT-WEIGHT: normal; FONT-SIZE: 14px; COLOR: #ffffff; FONT-FAMILY: arial, trebuchet ms, sans-serif; 
+		}
+A.whitelink:active {FONT-WEIGHT: normal; FONT-SIZE: 14px; COLOR: #e29717; FONT-FAMILY: arial, trebuchet ms, sans-serif; 
+		}
+A.whitelink:hover {FONT-WEIGHT: normal; FONT-SIZE: 14px; COLOR: #e29717; FONT-FAMILY: arial, trebuchet ms, sans-serif; 
+		}			
+		
+A.footlink:link {FONT-WEIGHT: normal; FONT-SIZE: 12px; COLOR: #ffffff; FONT-FAMILY: arial, trebuchet ms, sans-serif; 
+		}
+A.footlink:visited {FONT-WEIGHT: normal; FONT-SIZE: 12px; COLOR: #ffffff; FONT-FAMILY: arial, trebuchet ms, sans-serif; 
+		}
+A.footlink:active {FONT-WEIGHT: normal; FONT-SIZE: 12px; COLOR: #0066cc; FONT-FAMILY: arial, trebuchet ms, sans-serif; 
+		}
+A.footlink:hover {FONT-WEIGHT: normal; FONT-SIZE: 12px; COLOR: #0066cc; FONT-FAMILY: arial, trebuchet ms, sans-serif; 
+		}			
+
+	 
+P { 
+font-family: arial, trebuchet ms, sans-serif;
+font-size: 14px;
+color: #363636;
+line-height: 24px;
+}
+
+.white { 
+font-family: arial, trebuchet ms, sans-serif;
+font-size: 14px;
+color: #ffffff;
+line-height: 24px;
+}
+
+.bodylist
+{
+list-style: none;
+margin: 0;
+padding: 0;
+line-height: 24px;
+}
+
+li.bodylist
+{
+    line-height: 1.5em;
+    margin: 0.2em 0 0 02em;
+    padding: 0;
+    list-style-image: url(../images/li.gif);
+    list-style-type: square;
+	line-height: 24px;
+}
+
+UL { 
+font-family: arial, trebuchet ms, sans-serif;
+font-size: 14px;
+color: #363636;
+line-height: 24px;
+}
+
+LI { 
+font-family: arial, trebuchet ms, sans-serif;
+font-size: 14px;
+color: #363636;
+line-height: 24px;
+}
+
+OL { 
+font-family: arial, trebuchet ms, sans-serif;
+font-size: 14px;
+color: #363636;
+line-height: 24px;
+}
+
+
+TD { 
+font-family: arial, trebuchet ms, sans-serif;
+font-size: 14px;
+color: #363636;
+line-height: 24px;
+}
+
+BR { 
+font-family: arial, trebuchet ms, sans-serif;
+font-size: 14px;
+color: #363636;
+line-height: 24px;
+}
+
+.spaceless { 
+font-family: arial, trebuchet ms, sans-serif;
+font-size: 14px;
+color: #363636;
+line-height: 18px;
+}
+
+HR {
+color: #d3d3d3;
+height: 1px;
+noshade;
+}
+
+.header {
+font-size: 22px; 
+font-family: arial, trebuchet ms, sans-serif;
+font-style: normal;
+color: #204c71;
+font-weight: normal;
+line-height: 24px;
+}
+
+.subheader {
+font-size: 18px; 
+font-family: arial, trebuchet ms, sans-serif;
+font-style: normal;
+color: #204c71;
+font-weight: normal;
+line-height: 24px;
+}
+
+.homeheader {
+font-size: 22px; 
+font-family: arial, tahoma, sans-serif;
+font-style: normal;
+color: #174986;
+font-weight: normal;
+line-height: 22px;
+}
+
+.homeheader2 {
+font-size: 22px; 
+font-family: arial, tahoma, sans-serif;
+font-style: normal;
+color: #ffffff;
+font-weight: normal;
+line-height: 22px;
+}
+
+.homeheader3 {
+font-size: 21px; 
+font-family: arial, tahoma, sans-serif;
+font-style: normal;
+color: #ffffff;
+font-weight: normal;
+line-height: 26px;
+}
+
+.boxhead {
+font-size: 18px; 
+font-family: arial, trebuchet ms, sans-serif;
+font-style: normal;
+color: #5a5a5a;
+font-weight: normal;
+}
+
+.boxquote {
+font-size: 16px; 
+font-family: arial, trebuchet ms, sans-serif;
+font-style: normal;
+color: #5a5a5a;
+font-weight: normal;
+}
+
+.boxtxt { 
+font-family: arial, trebuchet ms, sans-serif;
+font-size: 12px;
+color: #5a5a5a;
+line-height: 18px;
+}
+
+.horizontal_dashed_line{
+  border-bottom: 1px dashed #b4b4b4;
+}
+
+.mkwhead {
+font-size: 18px; 
+font-family: arial, trebuchet ms, sans-serif;
+font-style: normal;
+color: #592d00;
+font-weight: normal;
+line-height: 16px;
+}
+
+.mkwtxt { 
+font-family: arial, trebuchet ms, sans-serif;
+font-size: 12px;
+color: #592d00;
+line-height: 16px;
+}
+
+.timehead {
+font-size: 18px; 
+font-family: arial, trebuchet ms, sans-serif;
+font-style: normal;
+color: #0b4170;
+font-weight: normal;
+line-height: 16px;
+}
+
+.timetxt { 
+font-family: arial, trebuchet ms, sans-serif;
+font-size: 11px;
+color: #0b4170;
+line-height: 16px;
+}
+
+.newshead {
+font-size: 16px; 
+font-family: arial, trebuchet ms, sans-serif;
+font-style: normal;
+color: #174986;
+font-weight: bold;
+line-height: 24px;
+}
+
+.caption {
+font-size: 11px; 
+font-family: arial, trebuchet ms, sans-serif;
+font-style: normal;
+color: #363636;
+font-weight: normal;
+line-height: 14px;
+}
+
+.statement { 
+font-family: arial, trebuchet ms, sans-serif;
+font-size: 12px;
+color: #592d00;
+line-height: 15px;
+}
+
+.footer {
+font-size: 13px; 
+font-family: arial, trebuchet ms, sans-serif;
+font-style: normal;
+color: #ffffff;
+font-weight: normal;
+line-height: 15px;
+}
+
+.smaller {
+font-size: 12px; 
+font-family: arial, trebuchet ms, sans-serif;
+font-style: normal;
+color: #363636;
+font-weight: normal;
+line-height: 15px;
+}
+
+.smallest {
+font-size: 11px; 
+font-family: arial, trebuchet ms, sans-serif;
+font-style: normal;
+color: #363636;
+font-weight: normal;
+line-height: 15px;
+}
+
+H1 {font-size: 14pt; 
+    font-family: arial, trebuchet ms, sans-serif; 
+    font-weight: bold; 
+    font-style: normal; 
+    color: #363636;
+}
+
+H2 {font-size: 11pt; 
+    font-family: arial, trebuchet ms, sans-serif; 
+    font-weight: bold;
+    font-style: normal; 
+    color: #363636;
+}
+
+H3 {font-size: 11pt;
+    font-family: arial, trebuchet ms, sans-serif;
+    font-weight: bold;  
+    font-style: normal; 
+    color: #363636;
+}

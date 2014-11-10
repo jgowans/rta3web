@@ -29,10 +29,12 @@ var dataPos = -1;
 var maxLength = 100;
 var pause = false;
 var newMessage = false;
+var mX;
 function loadData(id, freq, spectrum, maxx, minx, maxy, miny, heading, xaxis, yaxis) {
         pjs = Processing.getInstanceById('boss');
     if (pjs) {
         // alert("LOAD DATA");
+        
         div = document.getElementById("graphdiv");
         data.push(eval( spectrum ));
         freqs = (eval( freq ));
@@ -40,8 +42,8 @@ function loadData(id, freq, spectrum, maxx, minx, maxy, miny, heading, xaxis, ya
         // console.log(miny);
         pjs.setVals(data[0], freqs, maxx, minx, maxy, miny);
         pjs.setLabels(heading, xaxis, yaxis);
-        
 
+        mX = minx;
     }
 }
 function reloadData(id) {
@@ -65,8 +67,17 @@ function reloadData(id) {
             // <!-- $( "#timestampT" ).text(headings[dataPos]); -->
         }
         
+        var freqs = eval(message['freqs']);
+
         pjs.setLabels(headings[dataPos], message['xaxis'], message['yaxis']);
-        pjs.resetVals(data[dataPos], message['miny'], message['maxy']);
+        if (freqs.length == 0){
+            console.log("freqs len = 0")
+            pjs.resetVals(data[dataPos], message['miny'], message['maxy']);
+        }
+        else{
+            console.log("freqs len = " + freqs.length + " resetting freqs");
+            pjs.setVals(freqs, data[dataPos], message['maxx'], message['minx'], message['maxy'], message['miny']);
+        }
     } 
 }
 function togglePause(){

@@ -1,4 +1,10 @@
-/* @pjs preload="http://rfimonitor.kat.ac.za:6543/static/sketches/Images/close.png", "http://rfimonitor.kat.ac.za:6543/static/sketches/Images/help.png", "http://rfimonitor.kat.ac.za:6543/static/sketches/Images/refresh.png", "http://rfimonitor.kat.ac.za:6543/static/sketches/Images/save.png", "http://rfimonitor.kat.ac.za:6543/static/sketches/Images/expand.png", "http://rfimonitor.kat.ac.za:6543/static/sketches/Images/show_label.png", "http://rfimonitor.kat.ac.za:6543/static/sketches/Images/forbidden.png", "http://rfimonitor.kat.ac.za:6543/static/sketches/Images/Instructions.png","http://rfimonitor.kat.ac.za:6543/static/sketches/Images/overrange.png";*/
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+        <head>
+              <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+              <script type="text/processing" data-processing-target="boss">
+
+/* @pjs preload="http://kat-sdp-vc3:6543/static/sketches/Images/close.png", "http://kat-sdp-vc3:6543/static/sketches/Images/help.png", "http://kat-sdp-vc3:6543/static/sketches/Images/refresh.png", "http://kat-sdp-vc3:6543/static/sketches/Images/save.png", "http://kat-sdp-vc3:6543/static/sketches/Images/expand.png", "http://kat-sdp-vc3:6543/static/sketches/Images/show_label.png", "http://kat-sdp-vc3:6543/static/sketches/Images/forbidden.png", "http://kat-sdp-vc3:6543/static/sketches/Images/Instructions.png","http://kat-sdp-vc3:6543/static/sketches/Images/overrange.png";*/
 
 //DATA
 float[] y_vals;
@@ -45,7 +51,6 @@ boolean showHelp = false;
 boolean times = false; // set x axis to times
 boolean dispOverrange = false;
 boolean hasOverrange = false;
-boolean resetview = false;
 
 //INTERACTION
 float clickX;
@@ -83,15 +88,15 @@ void setup(){
     y_height = height * 0.8;
     xCentre = left + x_width/2;
     yCentre = top + y_height/2;
-    close = loadImage("http://rfimonitor.kat.ac.za:6543/static/sketches/Images/close.png");
-    refresh = loadImage("http://rfimonitor.kat.ac.za:6543/static/sketches/Images/refresh.png");
-    download = loadImage("http://rfimonitor.kat.ac.za:6543/static/sketches/Images/save.png");
-    help = loadImage("http://rfimonitor.kat.ac.za:6543/static/sketches/Images/help.png");
-    expand = loadImage("http://rfimonitor.kat.ac.za:6543/static/sketches/Images/expand.png");
-    show_label = loadImage("http://rfimonitor.kat.ac.za:6543/static/sketches/Images/show_label.png");
-    forbidden = loadImage("http://rfimonitor.kat.ac.za:6543/static/sketches/Images/forbidden.png");
-    instructions = loadImage("http://rfimonitor.kat.ac.za:6543/static/sketches/Images/Instructions.png");
-    overrangeIcon = loadImage("http://rfimonitor.kat.ac.za:6543/static/sketches/Images/overrange.png");
+    close = loadImage("http://kat-sdp-vc3:6543/static/sketches/Images/close.png");
+    refresh = loadImage("http://kat-sdp-vc3:6543/static/sketches/Images/refresh.png");
+    download = loadImage("http://kat-sdp-vc3:6543/static/sketches/Images/save.png");
+    help = loadImage("http://kat-sdp-vc3:6543/static/sketches/Images/help.png");
+    expand = loadImage("http://kat-sdp-vc3:6543/static/sketches/Images/expand.png");
+    show_label = loadImage("http://kat-sdp-vc3:6543/static/sketches/Images/show_label.png");
+    forbidden = loadImage("http://kat-sdp-vc3:6543/static/sketches/Images/forbidden.png");
+    instructions = loadImage("http://kat-sdp-vc3:6543/static/sketches/Images/Instructions.png");
+    overrangeIcon = loadImage("http://kat-sdp-vc3:6543/static/sketches/Images/overrange.png");
 }
 
 void setLabels (String h, String x, String y){
@@ -133,7 +138,6 @@ void setVals(float[] x_data, float[] y_data, float maxx, float minx, float maxy,
   length = maxXPos - minXPos + 1;
   renorm = true;
   loaded = true;
-  resetview = true;
 }
 
 void draw() {
@@ -142,11 +146,10 @@ void draw() {
    
   if(loaded)
   {
-    
+    calcBounds();
     if (renorm && !zooming)
     {
       normalise();
-      calcBounds();
       renorm = false;
     }
 
@@ -170,12 +173,6 @@ void draw() {
 
     if (!zooming && !ctm)
       noLoop();
-
-    if (resetview)
-    {
-      resetZoom();
-      resetview = false;
-    }
   }
 }
 
@@ -312,7 +309,6 @@ void mouseScrolled()
 
   PREVMID = yMid;
   renorm = true;
-  calcBounds();
   loop();
 }
 
@@ -476,14 +472,13 @@ void mouseDragged()
     YPAN = YPAN - distY;
     xMid = xMid + distX/x_width*xDiff;
     yMid = yMid - distY/y_height*yDiff;
-    calcBounds();
     loop();
   }
 }
 
 float mousePos_to_x_val()
 {
-  return (mouseX - left) / x_width * xDiff + minX + 1;
+  return (mouseX - left) / x_width * xDiff + minX;
 }
 
 float mousePos_to_y_val()
@@ -682,3 +677,6 @@ String formatFloat (float f, int r)
 
   return ret;
 }
+</script>
+</head>
+</html>
